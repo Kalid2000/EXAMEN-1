@@ -1,0 +1,78 @@
+#include "p16F628a.inc" ;incluir librerias relacionadas con el dispositivo
+    __CONFIG _FOSC_INTOSCCLK & _WDTE_OFF & _PWRTE_OFF & _MCLRE_OFF & _BOREN_OFF & _LVP_OFF & _CPD_OFF & _CP_OFF
+;configuración del dispositivotodo en OFF y la frecuencia de oscilador
+;es la del "reloj del oscilador interno" (INTOSCCLK)
+RES_VECT CODE 0x0000 ; processor reset vector
+    GOTO START ; go to beginning of program
+; TODO ADD INTERRUPTS HERE IF USED
+MAIN_PROG CODE ; let linker place main program
+;variables para el contador:
+x equ 0x34
+y equ 0x35
+z equ 0x36
+a equ 0x37
+;inicio del programa:
+START
+    MOVLW 0x07 ;Apagar comparadores
+    MOVWF CMCON
+
+    BCF STATUS, RP1 ;Cambiar al banco 1
+    BSF STATUS, RP0
+    MOVLW b'00000000' ;Establecer puerto B como salida (los 8 bits del puerto)
+    MOVWF TRISB
+    BCF STATUS, RP0 ;Regresar al banco 0
+    GOTO INICIO
+
+INICIO
+    MOVLW b'00000000'
+    MOVWF PORTB
+    
+Izquierda
+    RLF PORTB,1
+    call tiempo1
+    BTFSC STATUS, C
+    GOTO Derecha
+    GOTO Izquierda
+    
+Derecha
+    RRF PORTB,1
+    call tiempo1
+    BTFSC STATUS, C
+    GOTO Izquierda 
+    GOTO Derecha
+  
+    
+tiempo1:   
+    nop
+    movlw d'107' ;establecer valor de la variable k
+    movwf x
+xloop:
+    nop
+    decfsz x,f
+    goto xloop
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    movlw d'12' ;establecer valor de la variable i
+    movwf y
+yloop:
+    nop ;NOPs de relleno (ajuste de tiempo)
+    nop
+    nop
+    nop
+    nop
+    nop 
+    movlw d'34' ;establecer valor de la variable j
+    movwf z
+zloop:
+    nop ;NOPs de relleno (ajuste de tiempo)
+    movlw d'100' ;establecer valor de la variable k
+    movwf a
+aloop:
+    decfsz a,f
+    goto aloop
+    decfsz z,f
+    goto zloop
+    decfsz y,f
+    goto yloop
+    return 
+
+    END
